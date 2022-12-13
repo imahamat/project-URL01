@@ -89,13 +89,13 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Back-end build
+          name: Build back-end
           command: |
              cd backend
              npm install
              npm run build
-             # Do not use the --force option along with the command below in your local
-             npm audit fix --audit-level=critical
+             npm audit fix --audit-level=critical --force
+
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
