@@ -328,7 +328,6 @@ cleanup:
           command: |
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
-               aws s3 rm "s3://${OldBucketID}" --recursive
                aws cloudformation delete-stack --stack-name myStack-${OldWorkflowID:0:5}
             fi
             
@@ -336,16 +335,16 @@ workflows:
   default:
     jobs:
       #- print_greetings
-      #- build-frontend
+      - build-frontend
       - build-backend
-      #- test-frontend:
-      #   requires: [build-frontend]
-      #- test-backend:
-      #   requires: [build-backend]
+      - test-frontend:
+         requires: [build-frontend]
+      - test-backend:
+         requires: [build-backend]
       - scan-backend:
           requires: [build-backend]
-      #- scan-frontend:
-      #    requires: [build-frontend]
+      - scan-frontend:
+          requires: [build-frontend]
       # - deploy-infrastructure:
       #     requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       #     filters:
