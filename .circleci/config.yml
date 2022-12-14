@@ -140,10 +140,10 @@ jobs:
           command: |
             cd frontend
             npm install
-            npm install oauth-sign@^0.9.0
-            npm audit fix --audit-level=critical --force
+            # Do not use the --force option along with the command below in your local
+            npm audit fix --audit-level=critical
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
-            npm audit --audit-level=critical
+            #npm audit fix --audit-level=critical --force
 
   scan-backend:
     docker:
@@ -156,20 +156,13 @@ jobs:
           name: Scan back-end
           command: |
             cd backend
-            rm -rf node_modules
-            rm -f package-lock.json
             npm install
-            npm install oauth-sign@^0.9.0
-            npm audit fix --audit-level=critical --force
+            # Do not use the --force option along with the command below in your local
+            npm audit fix --audit-level=critical
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
-            npm audit --audit-level=critical
-            npm install --save-dev ts-loader@9.4.2 
-            npm update set-value 
-            npm update union-value 
-            npm update mkdirp 
-            npm update path-parse 
-            npm update kind-of
-            npm update mixin-deep 
+            #npm audit fix --audit-level=critical --force
+
+         
       
 
   # deploy-infrastructure:
@@ -343,7 +336,7 @@ workflows:
   default:
     jobs:
       #- print_greetings
-      #- build-frontend
+      - build-frontend
       - build-backend
       #- test-frontend:
       #   requires: [build-frontend]
@@ -351,8 +344,8 @@ workflows:
       #   requires: [build-backend]
       - scan-backend:
           requires: [build-backend]
-     # - scan-frontend:
-     #     requires: [build-frontend]
+      - scan-frontend:
+          requires: [build-frontend]
       # - deploy-infrastructure:
       #     requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       #     filters:
