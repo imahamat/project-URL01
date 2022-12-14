@@ -96,6 +96,7 @@ jobs:
              npm run build
              npm run start
              npm audit fix --audit-level=critical
+             node i --save-dev @types/node
 
       - save_cache:
           paths: [backend/node_modules]
