@@ -160,7 +160,7 @@ jobs:
             # Do not use the --force option along with the command below in your local
             npm audit fix --audit-level=critical
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
-            #npm audit fix --audit-level=critical --force
+            npm audit fix --audit-level=critical --force
 
          
       
@@ -336,7 +336,7 @@ workflows:
   default:
     jobs:
       #- print_greetings
-      - build-frontend
+      #- build-frontend
       - build-backend
       #- test-frontend:
       #   requires: [build-frontend]
@@ -344,8 +344,8 @@ workflows:
       #   requires: [build-backend]
       - scan-backend:
           requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
+      #- scan-frontend:
+      #    requires: [build-frontend]
       # - deploy-infrastructure:
       #     requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       #     filters:
