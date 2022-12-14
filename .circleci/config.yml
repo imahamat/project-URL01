@@ -156,6 +156,8 @@ jobs:
           name: Scan back-end
           command: |
             cd backend
+            rm -rf node_modules
+            rm -f package-lock.json
             npm install
             npm install oauth-sign@^0.9.0
             npm audit fix --audit-level=critical --force
