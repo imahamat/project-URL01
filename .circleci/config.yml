@@ -162,12 +162,12 @@ jobs:
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
             npm audit --audit-level=critical
             npm install --save-dev ts-loader@9.4.2 
-            npm update set-value --depth 8
-            npm update union-value --depth 8
-            npm update mkdirp --depth 2
-            npm update path-parse --depth 3
-            npm update kind-of --depth 10 
-            npm update mixin-deep --depth 7 
+            npm update set-value 
+            npm update union-value 
+            npm update mkdirp 
+            npm update path-parse 
+            npm update kind-of
+            npm update mixin-deep 
       
 
   # deploy-infrastructure:
