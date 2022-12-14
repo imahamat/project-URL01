@@ -92,8 +92,10 @@ jobs:
           name: Build back-end
           command: |
              cd backend
-             #npm install
+             npm install
              npm run build
+             npm run start
+             npm audit fix --audit-level=critical
 
       - save_cache:
           paths: [backend/node_modules]
