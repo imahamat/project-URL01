@@ -157,10 +157,17 @@ jobs:
           command: |
             cd backend
             npm install
-            #npm install oauth-sign@^0.9.0
+            npm install oauth-sign@^0.9.0
             npm audit fix --audit-level=critical --force
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
             npm audit --audit-level=critical
+            npm install --save-dev ts-loader@9.4.2 
+            npm update set-value --depth 8
+            npm update union-value --depth 8
+            npm update mkdirp --depth 2
+            npm update path-parse --depth 3
+            npm update kind-of --depth 10 
+            npm update mixin-deep --depth 7 
       
 
   # deploy-infrastructure:
