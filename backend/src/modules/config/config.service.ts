@@ -28,7 +28,7 @@ export class ConfigService {
   private readonly envConfig: EnvConfig;
 
   constructor() {
-    this.envConfig = this.validateInput(.env);
+    this.envConfig = this.validateInput(process.env);
   }
 
   private validateInput(envConfig): EnvConfig {
@@ -67,7 +67,7 @@ export class ConfigService {
 
   get about(): AboutInfo {
     return {
-      version: .env.npm_package_version,
+      version: process.env.npm_package_version,
       environment: this.envConfig.NODE_ENV,
     };
   }
