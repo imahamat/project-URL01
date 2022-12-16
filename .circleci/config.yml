@@ -212,7 +212,7 @@ jobs:
             command: |  
               ansible-playbook -i inventory.txt configure-server.yml
         - destroy-environment:
-            - id:  << parameters.id >>
+             - id:  << parameters.id >>
 
   run-migrations:
      docker:
@@ -238,7 +238,7 @@ jobs:
                     curl https://kvdb.io/9GE4jRtKznmVKRfvdBABBe/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
                 fi
           - destroy-environment:
-            - id:  << parameters.id >>
+                 - id:  << parameters.id >>
         
   # deploy-frontend:
   #   docker:
