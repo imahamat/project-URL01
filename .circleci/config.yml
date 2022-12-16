@@ -342,7 +342,7 @@ workflows:
   default:
     jobs:
       - print_greetings
-      - build-frontend
+      #- build-frontend
       #- build-backend
       #- test-frontend:
       #   requires: [build-frontend]
