@@ -191,33 +191,33 @@ jobs:
       - destroy_environment:
           - id: <<parameters.id>>
 
-  # configure-infrastructure:
-  #   docker:
-  #     - image: python:3.7-alpine3.11
-  #     # Docker image here that supports Ansible
-  #   steps:
-  #     - checkout
-  #     - add_ssh_keys:
-  #         fingerprints: ["cd:27:1a:dc:93:5f:2b:61:a7:52:bd:16:dc:b7:03:3d"]
-  #     # attach workspace
-  #     - attach_workspace:
-  #         at: ~/.circleci/ansible      
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           # install the dependencies needed for your playbook
-  #           apk add --update ansible    
-  #     - run:
-  #         name: Configure server
-  #         command: |  
-  #           ansible-playbook -i inventory.txt configure-server.yml
-  #     - destroy-environment:
-  #         - id:  << parameters.id >>
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11
+     
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["cd:27:1a:dc:93:5f:2b:61:a7:52:bd:16:dc:b7:03:3d"]
+     
+      - attach_workspace:
+          at: ~/.circleci/ansible      
+      - run:
+          name: Install dependencies
+          command: |
+            # install the dependencies needed for your playbook
+            apk add --update ansible    
+      - run:
+          name: Configure server
+          command: |  
+            ansible-playbook -i inventory.txt configure-server.yml
+      - destroy-environment:
+          - id:  << parameters.id >>
 
   run-migrations:
      docker:
        - image: cimg/node:15.1
-       # Docker image here that supports NodeJS
+
      steps:
        - checkout 
        - run:
