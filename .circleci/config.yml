@@ -219,7 +219,7 @@ jobs:
        - image: cimg/node:15.1
        # Docker image here that supports NodeJS
      steps:
-       - chekchout 
+       - checkout 
        - run:
            name: Run migrations
            command: |
