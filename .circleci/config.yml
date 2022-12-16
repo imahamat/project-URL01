@@ -22,7 +22,6 @@ commands:
     parameters:
       id:
         type: string 
-      # Add parameter here   
     steps:
       - run:
           name: Destroy environments
