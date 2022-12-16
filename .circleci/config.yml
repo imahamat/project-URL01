@@ -188,9 +188,7 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      - destroy_environment:
-          - id: <<parameters.id>>
-
+     
   configure-infrastructure:
     docker:
        - image: python:3.7-alpine3.11
@@ -211,9 +209,7 @@ jobs:
             name: Configure server
             command: |  
               ansible-playbook -i inventory.txt configure-server.yml
-        - destroy-environment:
-             - id:  << parameters.id >>
-
+      
   run-migrations:
      docker:
        - image: cimg/node:15.1
@@ -237,9 +233,7 @@ jobs:
                       # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
                       curl https://kvdb.io/9GE4jRtKznmVKRfvdBABBe/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
                   fi
-            # - destroy-environment:
-            #       - id:  << parameters.id >>
-        
+          
   # deploy-frontend:
   #   docker:
   #     # Docker image here that supports AWS CLI
