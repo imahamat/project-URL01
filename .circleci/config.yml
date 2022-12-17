@@ -271,35 +271,35 @@ jobs:
      # Here's where you will add some code to rollback on failure      
                     
   deploy-backend:
-    docker:
-        - image: amazon/aws-cli
-    steps:
-        - checkout    
-        - add_ssh_keys:
-              fingerprints: ["cd:27:1a:dc:93:5f:2b:61:a7:52:bd:16:dc:b7:03:3d"]
-        - attach_workspace:
-              at: ~/.circleci/ansible      
-        - run:
-            name: Install dependencies
-            command: |
-              apt install python3.8
-              apt install gzip
-              apk add --update ansible  
-              npm install 
+      docker:
+          - image: amazon/aws-cli
+      steps:
+          - checkout    
+          - add_ssh_keys:
+                fingerprints: ["cd:27:1a:dc:93:5f:2b:61:a7:52:bd:16:dc:b7:03:3d"]
+          - attach_workspace:
+                at: ~/.circleci/ansible      
+          - run:
+              name: Install dependencies
+              command: |
+                apt install python3.8
+                apt install gzip
+                apk add --update ansible  
+                npm install 
 
-      - run:
-          name: Deploy backend
-          command: |
-            cd backend
-            npm i
-            npm run build
-            cd ..
-            # Zip the directory
-            tar -C backend -czvf artifact.tar.gz .
-            cd .circleci/ansible
-            echo "Contents  of the inventory.txt file is -------"
-            cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
+          - run:
+              name: Deploy backend
+              command: |
+                cd backend
+                npm i
+                npm run build
+                cd ..
+                # Zip the directory
+                tar -C backend -czvf artifact.tar.gz .
+                cd .circleci/ansible
+                echo "Contents  of the inventory.txt file is -------"
+                cat inventory.txt
+                ansible-playbook -i inventory.txt deploy-backend.yml
 
       # Here's where you will add some code to rollback on failure  
 
