@@ -415,10 +415,6 @@ cleanup:
       - run:
         name: Get old stack workflow id
         command: |
-
-          # Fetch the Old workflow ID
-          #yum install -y tar gzip
-
           export OldWorkflowID=$(aws cloudformation \
                   list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
                   --no-paginate --output text)
