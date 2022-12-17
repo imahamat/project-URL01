@@ -410,12 +410,12 @@ jobs:
 cleanup:
     docker:
        - image: amazon/aws-cli 
-       - run: yum install -y tar gzip
        - run:
           name: Get old stack workflow id
           command: |
             # your code here
             # Fetch the Old workflow ID
+            yum install -y tar gzip
             export OldWorkflowID=$(aws cloudformation \
                     list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
                     --no-paginate --output text)
@@ -472,7 +472,7 @@ workflows:
           requires: [deploy-backend, deploy-frontend]
       - cloudfront-update:
           requires: [smoke-test]
-      # - cleanup:
-      #     requires: [cloudfront-update]
+      - cleanup:
+          requires: [cloudfront-update]
 
 # VS Code Extension Version: 1.4.0
