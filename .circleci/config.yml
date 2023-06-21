@@ -7,8 +7,6 @@ orbs:
   # welcome: circleci/welcome-orb@0.4.1
   aws-cli: circleci/aws-cli@2.0.3
 # Orchestrate or schedule a set of jobs
-  # for notification using slack 
-  slack: circleci/slack@4.1
 
 commands:
   # Exercise: Reusable Job Code
@@ -166,10 +164,6 @@ jobs:
             npm audit fix --audit-level=critical
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
             #npm audit fix --audit-level=critical --force
-            exit 1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
