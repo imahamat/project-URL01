@@ -7,6 +7,8 @@ orbs:
   # welcome: circleci/welcome-orb@0.4.1
   aws-cli: circleci/aws-cli@2.0.3
 # Orchestrate or schedule a set of jobs
+  # for notification using slack 
+  slack: circleci/slack@4.12.5
 
 commands:
   # Exercise: Reusable Job Code
@@ -164,7 +166,10 @@ jobs:
             npm audit fix --audit-level=critical
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
             #npm audit fix --audit-level=critical --force
-
+            exit 1
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -407,7 +412,7 @@ jobs:
 
       # Here's where you will add some code to rollback on failure  
 
-cleanup:
+  cleanup:
     docker:
       - image: amazon/aws-cli 
     steps:
@@ -459,19 +464,19 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
-      - deploy-infrastructure:
-           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          #  filters:
-          #    branches:
-          #      only: [test-feature-branch]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
+      # - deploy-infrastructure:
+      #      requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      #     #  filters:
+      #     #    branches:
+      #     #      only: [test-feature-branch]
+      # - configure-infrastructure:
+      #     requires: [deploy-infrastructure]
+      # - run-migrations:
+      #     requires: [configure-infrastructure]
+      # - deploy-frontend:
+      #     requires: [run-migrations]
+      # - deploy-backend:
+      #     requires: [run-migrations]
       # - smoke-test:
       #     requires: [deploy-backend, deploy-frontend]
       # - cloudfront-update:
