@@ -9,52 +9,38 @@ orbs:
 # Orchestrate or schedule a set of jobs
 
 commands:
-  # Exercise: Reusable Job Code
-  print_pipeline_id:
-    parameters:
-      id: 
-        type: string
-    steps:
-      - run: echo << parameters.id >>  
-
   destroy-environment:
-    description: Destroy backend and frontend cloudformation stacks given a workflow ID.
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
       workflow_id:
-        type: string      
+        type: string
+        # default: ${CIRCLE_WORKFLOW_ID}
     steps:
       - run:
           name: Destroy environments
           when: on_fail
           command: |
-              echo "Destroying environment: << parameters.workflow_id >> "
-              aws s3 rm "s3://udapeople-${ << parameters.workflow_id >> }" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-backend-${ << parameters.workflow_id >>}"
-              aws cloudformation delete-stack --stack-name "udapeople-frontend-${ << parameters.workflow_id >> }"
+            aws cloudformation delete-stack \
+            --stack-name udapeople-backend-<<parameters.workflow_id>>
+            aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
+            aws cloudformation delete-stack \
+            --stack-name udapeople-frontend-<<parameters.workflow_id>>
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     parameters:
       workflow_id:
-        type: string    
+        type: string
     steps:
       - run:
           name: Revert migrations
           when: on_fail
           command: |
-            # Your Memstash or kvdb.io GET URL code goes here
-            # Example: Memstash.io
-            SUCCESS=$(curl -H "token: e52b52de-ee26-41a5-86e8-e8dcc3d995a5" --request GET https://api.memstash.io/values/migration_<< parameters.workflow_id >>)
-            # Example: kvdb.io
-            SUCCESS=$(curl --insecure  https://kvdb.io/9GE4jRtKznmVKRfvdBABBe/migration_<< parameters.workflow_id >>)
-            # Logic for reverting the database state
-            if (( $SUCCESS == 1 ));
-            then
-                cd ~/project/backend
-                npm install
-                npm run migration:revert
-            fi  
-            
+            cd ~/project/backend
+            npm install
+            npm run build
+            npm run migrations:revert
+        
 jobs:
   print_greetings:
     docker:
@@ -164,6 +150,7 @@ jobs:
             npm audit fix --audit-level=critical
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
             #npm audit fix --audit-level=critical --force
+
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -188,18 +175,16 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            # "Name=instance-id,Values=i-0d549b97e074b9b89" 
-
-            BACKEND_IP = " aws ec2 describe-instances \
-            --filters \
-            "Name=instance-state-name,Values=running" \
-            "Name=instance-type,Values=t2.micro" \
-            --query "Reservations[*].Instances[*].[PublicIpAddress]"\
-            --output text "
+            echo $(aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filters Name=tag:aws:cloudformation:stack-name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
+            --output text) >> ~/project/.circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
      
   configure-infrastructure:
     docker:
@@ -458,9 +443,9 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
-      # - deploy-infrastructure:
-      #      requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-      #     #  filters:
+      - deploy-infrastructure:
+           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          #  filters:
       #     #    branches:
       #     #      only: [test-feature-branch]
       # - configure-infrastructure:
