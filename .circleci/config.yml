@@ -493,14 +493,12 @@ workflows:
       - scan-frontend:
           requires: [build-frontend]
       - deploy-infrastructure:
-      #     requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       #     filters:
       #       branches:
-      #         only: [dev-branch]
-      # - add-prometheus-node-exporter:
-      #     requires: [deploy-infrastructure]
+      #         only: [test-feature-branch]
       # - configure-infrastructure:
-      #     requires: [add-prometheus-node-exporter]
+      #     requires: [deploy-infrastructure]
       # - run-migrations:
       #     requires: [configure-infrastructure]
       # - deploy-frontend:
@@ -512,4 +510,4 @@ workflows:
       # - cloudfront-update:
       #     requires: [smoke-test]
       # - cleanup:
-      #     requires: [cloudfront-update, add-prometheus-node-exporter]
+      #     requires: [cloudfront-update]
