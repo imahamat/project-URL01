@@ -9,39 +9,56 @@ orbs:
 # Orchestrate or schedule a set of jobs
 
 commands:
+  # Exercise: Reusable Job Code
+  print_pipeline_id:
+    parameters:
+      id: 
+        type: string
+    steps:
+      - run: echo << parameters.id >>  
+
   destroy-environment:
-    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    description: Destroy backend and frontend cloudformation stacks given a workflow ID.
     parameters:
       workflow_id:
-        type: string
-        # default: ${CIRCLE_WORKFLOW_ID}
+        type: string      
+         # default: ${CIRCLE_WORKFLOW_ID}
     steps:
       - run:
           name: Destroy environments
           when: on_fail
           command: |
-            aws cloudformation delete-stack \
-            --stack-name udapeople-backend-<<parameters.workflow_id>>
-            aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
-            aws cloudformation delete-stack \
-            --stack-name udapeople-frontend-<<parameters.workflow_id>>
+              echo "Destroying environment: << parameters.workflow_id >> "
+              aws s3 rm "s3://udapeople-${ << parameters.workflow_id >> }" --recursive
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${ << parameters.workflow_id >>}"
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${ << parameters.workflow_id >> }"
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     parameters:
       workflow_id:
-        type: string
+        type: string    
     steps:
       - run:
           name: Revert migrations
           when: on_fail
           command: |
-            cd ~/project/backend
-            npm install
-            npm run build
-            npm run migrations:revert
-        
+            # Your Memstash or kvdb.io GET URL code goes here
+            # Example: Memstash.io
+            SUCCESS=$(curl -H "token: e52b52de-ee26-41a5-86e8-e8dcc3d995a5" --request GET https://api.memstash.io/values/migration_<< parameters.workflow_id >>)
+            # Example: kvdb.io
+            SUCCESS=$(curl --insecure  https://kvdb.io/9GE4jRtKznmVKRfvdBABBe/migration_<< parameters.workflow_id >>)
+            # Logic for reverting the database state
+            echo $SUCCESS
+            if (( $SUCCESS == 1 ))
+            then
+                cd ~/project/backend
+                npm install > /dev/null
+                npm run migration:revert
+            fi  
+            
 jobs:
+
   print_greetings:
     docker:
       - image: circleci/node:13.8.0
@@ -156,6 +173,7 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
+      - run: yum install -y tar gzip
       - run:
           name: Ensure back-end infrastructure exists
           command: |
@@ -179,6 +197,7 @@ jobs:
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --filters Name=tag:aws:cloudformation:stack-name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
             --output text) >> ~/project/.circleci/ansible/inventory.txt
+             cat ~/project/.circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
@@ -188,31 +207,59 @@ jobs:
      
   configure-infrastructure:
     docker:
-       - image: python:3.7-alpine3.11
+       - image: python:3.10-alpine3.16
      
     steps:
         - checkout
         - add_ssh_keys:
-            fingerprints: ["cd:27:1a:dc:93:5f:2b:61:a7:52:bd:16:dc:b7:03:3d"]
-      
-        - attach_workspace:
-            at: ~/.circleci/ansible      
+            fingerprints: ["cd:27:1a:dc:93:5f:2b:61:a7:52:bd:16:dc:b7:03:3d"]   
         - run:
             name: Install dependencies
             command: |
               # install the dependencies needed for your playbook
-              apk add --update ansible    
+              apk add --update ansible --no-cache tar gzip ansible aws-cli   
+        - attach_workspace:
+            at: ~/
         - run:
             name: Configure server
             command: |  
+              # add environment variables to server
+              echo ENVIRONMENT=production > backend/.env
+              echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> backend/.env
+              echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> backend/.env
+              echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> backend/.env
+              echo TYPEORM_HOST=$TYPEORM_HOST >> backend/.env
+              echo TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS >> backend/.env
+              echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> backend/.env
+              echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> backend/.env
+              echo TYPEORM_PORT=$TYPEORM_PORT >> backend/.env
+              echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> backend/.env
+              cat backend/.env
+              cd .circleci/ansible
               ansible-playbook -i inventory.txt configure-server.yml
+        - persist_to_workspace:
+            root: ~/
+            paths:
+              - project/backend
+        - destroy-environment:
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       
   run-migrations:
      docker:
-       - image: cimg/node:15.1
-
+       - image: circleci/node:13.8.0 # safest to use to avoid migration errors
      steps:
-          - checkout 
+          - checkout
+          - run:
+              name: Install dependencies
+              command: |
+                sudo apt install -y tar gzip curl
+                curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                unzip -qq awscliv2.zip
+                sudo ./aws/install
+          - restore_cache:
+              keys: [backend-build]
+          - attach_workspace:
+              at: ~/ 
           - run:
               name: Run migrations
               command: |
@@ -228,31 +275,29 @@ jobs:
                       # If you are using memstash.io, generate the token "CZ2Y8PiWV3H6WtMVVzs7gcc" on the website
                       curl -H "Content-Type: text/plain" -H "token: CZ2Y8PiWV3H6WtMVVzs7gc" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
                       # If you are using kvdb.io, generate the bucket ID "CZ2Y8PiWV3H6WtMVVzs7gc" in your local terminal first
-                      curl https://kvdb.io/CZ2Y8PiWV3H6WtMVVzs7gc/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+                      curl --insecure https://kvdb.io/CZ2Y8PiWV3H6WtMVVzs7gc/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
                   fi
+          - destroy-environment:
+              workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
           
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli
+      -  image: python:3.7-alpine3.16
     steps:
-      - checkout
-      - attach_workspace:
-            at: ~/.circleci/ansible      
+      - checkout   
       - run:
           name: Install dependencies
           command: |
-             sudo apt install python3.8
-             apk add --update ansible  
-             npm install 
+             apk add --update --no-cache tar gzip nodejs npm aws-cli
+      - restore_cache:
+          keys: [frontend-build]
       - run:
           name: Get backend url
           command: |
             # Get public api
             #  aws ec2 describe-instances --filters "Name=instance-type,Values=t2.micro" --query "Reservations[].Instances[].PublicIpAddress"
-            export BACKEND_IP=$(
-               aws ec2 describe-instances \
-            --filters \
-            "Name=instance-state-name,Values=running" \
+            export BACKEND_IP=$(aws ec2 describe-instances \
+            --filters \ "Name=instance-state-name,Values=running" \
             "Name=instance-type,Values=t2.micro" \
             --query "Reservations[*].Instances[*].[PublicIpAddress]"\
             --output text
@@ -443,9 +488,9 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
-      - deploy-infrastructure:
-           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          #  filters:
+      # - deploy-infrastructure:
+      #      requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      #     #  filters:
       #     #    branches:
       #     #      only: [test-feature-branch]
       # - configure-infrastructure:
