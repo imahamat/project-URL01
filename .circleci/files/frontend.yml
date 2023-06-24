@@ -35,5 +35,5 @@ Outputs:
   WebsiteURL:
     Value: !GetAtt WebsiteBucket.WebsiteURL
     Description: URL for website hosted on S3
-  # WebsiteBucketSecureURL:  !Join ['', ['https://', !GetAtt 'WebsiteBucket',DomainName]]
-  #   Description: Name of website bucket to hold website content
+  WebsiteBucketSecureURL:  !Join ['', ['https://', !GetAtt 'WebsiteBucket',DomainName]]
+    Description: Name of website bucket to hold website content
