@@ -173,7 +173,6 @@ jobs:
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
             #npm audit fix --audit-level=critical --force
 
-
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -185,7 +184,7 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --tags project=your-tag \
+              --tags project=udapeople \
               --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}
       - run:
@@ -193,7 +192,7 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --tags project=your-tag \
+              --tags project=udapeople \
               --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}
       - run:
