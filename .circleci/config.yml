@@ -430,17 +430,15 @@ jobs:
 
   cleanup:
     docker:
-      - image: amazon/aws-cli
+      - image: amazon/aws-cli:latest
     steps:
       - checkout
       - run:
           name: Get old stack workflow id
           command: |
-              
                 ## Fetch the Old workflow ID  
                 echo <<pipeline.parameters.workflow_id>>
                 export OldWorkflowID=<<pipeline.parameters.workflow_id>>
-
                 ## Fetch the stack names  
                 export STACKS=($(aws cloudformation list-stacks \
                 --query "StackSummaries[*].StackName" \
@@ -448,10 +446,9 @@ jobs:
       - run:
           name: Remove old stacks and files
           command: |
-
             ## You can use any condition like:
-            ## if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
-            ### if [[ "${OldWorkflowID}" =~ "${STACKS[@]}"  ]]
+            ## if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]] 
+            ## if [[ "${OldWorkflowID}" =~ "${STACKS[@]}" ]]
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
               echo "----------cleaning up stacks------------"
