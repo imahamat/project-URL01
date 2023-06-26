@@ -59,7 +59,7 @@ jobs:
 
   build-frontend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -78,7 +78,7 @@ jobs:
 
   build-backend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -96,7 +96,7 @@ jobs:
 
   test-frontend:
     docker:
-       - image: circleci/node:13.8.0
+       - image: cimg/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -110,7 +110,7 @@ jobs:
 
   test-backend:
     docker:
-     - image: circleci/node:13.8.0
+     - image: cimg/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -124,7 +124,7 @@ jobs:
    
   scan-frontend:
     docker:  
-      - image: circleci/node:13.8.0
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -141,7 +141,7 @@ jobs:
 
   scan-backend:
     docker:
-       - image: circleci/node:13.8.0
+       - image: cimg/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -233,7 +233,7 @@ jobs:
       
   run-migrations:
      docker:
-       - image: circleci/node:13.8.0 # safest to use to avoid migration errors
+       - image: cimg/node:13.8.0 # safest to use to avoid migration errors
      steps:
           - checkout
           - run:
@@ -397,7 +397,7 @@ jobs:
 
   cloudfront-update:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - run:
@@ -430,7 +430,7 @@ jobs:
 
   cleanup:
     docker:
-      - image: amazon/aws-cli 
+      - image: amazon/aws-cli :2.12.3
     steps:
       - checkout
       - run:
