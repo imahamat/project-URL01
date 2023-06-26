@@ -483,7 +483,7 @@ workflows:
           #   branches:
           #     only: [test-feature-branch]
       # - add-prometheus-node-exporter:
-      #     requires: [deploy-infrastructure]
+      #     requires: [deploy-infrastructure]  #
       - configure-infrastructure:
           requires: [deploy-infrastructure] #  [add-prometheus-node-exporter]
       - run-migrations:
