@@ -476,13 +476,11 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
-      - deploy-infrastructure: 
+      - deploy-infrastructure: # continue only if we are in dev branch 
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
               filters:
                 branches:
-                  only: [dev-branch] # continue only if we are in dev branch 
-                                    # - add-prometheus-node-exporter:
-                                    #     requires: [deploy-infrastructure]  #
+                  only: [dev-branch] 
       - configure-infrastructure:
           requires: [deploy-infrastructure] #  [add-prometheus-node-exporter]
       - run-migrations:
