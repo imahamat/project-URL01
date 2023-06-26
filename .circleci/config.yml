@@ -430,7 +430,7 @@ jobs:
 
   cleanup:
     docker:
-      - image: amazon/aws-cli :2.12.3
+      - image: amazon/aws-cli
     steps:
       - checkout
       - run:
