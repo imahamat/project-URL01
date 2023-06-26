@@ -152,9 +152,9 @@ jobs:
             cd backend
             npm install
             # Do not use the --force option along with the command below in your local
-            npm audit fix --audit-level=critical
+            #npm audit fix --audit-level=critical
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
-            #npm audit fix --audit-level=critical --force
+            npm audit fix --audit-level=critical --force
 
   deploy-infrastructure:
     docker:
