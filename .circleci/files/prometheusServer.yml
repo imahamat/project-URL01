@@ -4,6 +4,7 @@ Description: |
   aws cloudformation deploy --stack-name prometheus --template-file ${ThisFile.yml} --capabilities CAPABILITY_IAM \
   --parameter-overrides AuthEmail=${YourGmailAddress} EmailPassword=${YourGmailPassword} FromEmail=${YourEmail} ToEmail=${AnyEmailDestination} \
   VPC=${YourVPC} AZ=${YourAZ} Subnet=${YourSubnet}
+
 Parameters:
   VPC:
     Description: Deploy the instance in this VPC
@@ -44,6 +45,7 @@ Parameters:
       This is the app password for your gmail account.
       Get one here https://support.google.com/accounts/answer/185833?hl=en
     Type: String
+    Default: "xlubpjinzcakejzd"
   FromEmail:
     Description: This is the email to send alerts from (usually same as AuthEmail)
     Type: String
