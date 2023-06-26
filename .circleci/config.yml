@@ -150,9 +150,9 @@ jobs:
             cd backend
             npm install
             # Do not use the --force option along with the command below in your local
-            #npm audit fix --audit-level=critical
+            npm audit fix --audit-level=critical
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
-            npm audit fix --audit-level=critical --force
+            #npm audit fix --audit-level=critical --force
 
   deploy-infrastructure:
     docker:
@@ -401,6 +401,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+
             sudo apt install -y tar gzip curl
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip -qq awscliv2.zip
@@ -408,17 +409,20 @@ jobs:
       - run:
           name: Update cloudfront distribution
           command: |
-            export OldWorkflowID=$(aws cloudformation list-exports \
+
+            export OldWorkflowID=$(aws cloudformation list-exports \s
             --query "Exports[?Name==\`WorkflowID\`].Value" \
             --no-paginate --output text)
             echo $OldWorkflowID >> ~/OldWorkflowID.txt
             cat ~/OldWorkflowID.txt
+
             # Change the initial stack name, as applicable to you
             aws cloudformation deploy \
             --template-file .circleci/files/cloudfront.yml \
             --stack-name InitialStack \
             --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7} \
             --tags project=udapeople
+
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
@@ -426,56 +430,57 @@ jobs:
 
   cleanup:
     docker:
-      - image: amazon/aws-cli:latest
+      - image: amazon/aws-cli
     steps:
       - checkout
       - run:
-          name: Get old stack workflow id /  Remove old stacks and files 
+          name: Get old stack workflow id
           command: |
-              ## Fetch the Old workflow ID #
-              echo <<pipeline.parameters.workflow_id>>
-              # export OldWorkflowID=<<pipeline.parameters.workflow_id>>
-              export OldWorkflowID=$(aws cloudformation \
-                        list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-                        --no-paginate --output text)
-              ## Fetch the stack names  
-              export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-                        --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
-              echo Stack names: "${STACKS[@]}"   
-              ## ---- Remove old stacks and files ---- ##
-              ## You can use any condition like:
-              ## if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
-              ### if [[ "${OldWorkflowID}" =~ "${STACKS[@]}"  ]]
-              if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-              then
-                echo "----------cleaning up stacks------------"
-                aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
-                aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-                aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
-              else
-                  echo ------------ Cannot cleanup stacks --------------
-              fi
+              
+                ## Fetch the Old workflow ID  
+                echo <<pipeline.parameters.workflow_id>>
+                export OldWorkflowID=<<pipeline.parameters.workflow_id>>
+
+                ## Fetch the stack names  
+                export STACKS=($(aws cloudformation list-stacks \
+                --query "StackSummaries[*].StackName" \
+                --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
+      - run:
+          name: Remove old stacks and files
+          command: |
+
+            ## You can use any condition like:
+            ## if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
+            ### if [[ "${OldWorkflowID}" =~ "${STACKS[@]}"  ]]
+            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+            then
+              echo "----------cleaning up stacks------------"
+              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+            else
+                echo ------------ Cannot cleanup stacks --------------
+            fi
+             
     
 workflows:
   default:
     jobs:
       - build-frontend
       - build-backend
-      # - test-frontend:
-      #     requires: [build-frontend]
-      # - test-backend:
-      #     requires: [build-backend]
-      # - scan-backend:
-      #     requires: [build-backend]
-      # - scan-frontend:
-      #     requires: [build-frontend]
-      - deploy-infrastructure 
-          # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          # filters:
-          #   branches:
-          #     only: [test-feature-branch]
-      # - add-prometheus-node-exporter:
-      #     requires: [deploy-infrastructure]  #
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
+      - deploy-infrastructure: # continue only if we are in dev branch 
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          filters:
+            branches:
+              only: [dev-branch] 
       - configure-infrastructure:
           requires: [deploy-infrastructure] #  [add-prometheus-node-exporter]
       - run-migrations:
