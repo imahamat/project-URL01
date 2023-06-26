@@ -2,11 +2,10 @@ version: 2.1
 
 # Use a package of configuration called an orb.
 orbs:
-  # Choose either one of the orbs below
-  # Declare a dependency on the welcome-orb
-  # welcome: circleci/welcome-orb@0.4.1
-  aws-cli: circleci/aws-cli@2.0.3
-# Orchestrate or schedule a set of jobs
+
+  aws-cli: circleci/aws-cli@4.0.0
+  slack: circleci/slack@4.12.5
+
 
 parameters:
   workflow_id:
@@ -89,8 +88,6 @@ jobs:
              npm install
              npm run build
             
-
-
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
@@ -422,8 +419,6 @@ jobs:
             --stack-name InitialStack \
             --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7} \
             --tags project=udapeople
-            echo OldWorkflowID=${OldWorkflowID}
-            echo Current Workflow ID: ${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
@@ -431,7 +426,7 @@ jobs:
 
   cleanup:
     docker:
-      - image: amazon/aws-cli
+      - image: amazon/aws-cli:latest
     steps:
       - checkout
       - run:
@@ -440,13 +435,10 @@ jobs:
               ## Fetch the Old workflow ID #
               echo <<pipeline.parameters.workflow_id>>
               export OldWorkflowID=<<pipeline.parameters.workflow_id>>
-              echo OldWorkflowID: "${OldWorkflowID}"
-              echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
               ## Fetch the stack names  
               export STACKS=$(aws cloudformation list-stacks \
               --query "StackSummaries[*].StackName" \
               --stack-status-filter CREATE_COMPLETE --no-paginate --output text)
-              echo Stack names: "${STACKS[@]}"
               ## ---- Remove old stacks and files ---- ##
               ## You can use any condition like:
               ## if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
