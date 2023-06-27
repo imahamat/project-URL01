@@ -4,6 +4,7 @@ Description: |
   aws cloudformation deploy --stack-name prometheus --template-file ${ThisFile.yml} --capabilities CAPABILITY_IAM \
   --parameter-overrides AuthEmail=${YourGmailAddress} EmailPassword=${YourGmailPassword} FromEmail=${YourEmail} ToEmail=${AnyEmailDestination} \
   VPC=${YourVPC} AZ=${YourAZ} Subnet=${YourSubnet}
+
 Parameters:
   VPC:
     Description: Deploy the instance in this VPC
