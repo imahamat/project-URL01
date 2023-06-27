@@ -410,7 +410,7 @@ jobs:
           name: Update cloudfront distribution
           command: |
 
-            export OldWorkflowID=$(aws cloudformation list-exports \s
+            export OldWorkflowID=$(aws cloudformation list-exports \
             --query "Exports[?Name==\`WorkflowID\`].Value" \
             --no-paginate --output text)
             echo $OldWorkflowID >> ~/OldWorkflowID.txt
@@ -430,37 +430,32 @@ jobs:
 
   cleanup:
     docker:
-      - image: amazon/aws-cli
+      - image: amazon/aws-cli:latest
     steps:
       - checkout
       - run:
           name: Get old stack workflow id
           command: |
-              
                 ## Fetch the Old workflow ID  
                 echo <<pipeline.parameters.workflow_id>>
                 export OldWorkflowID=<<pipeline.parameters.workflow_id>>
-
                 ## Fetch the stack names  
                 export STACKS=($(aws cloudformation list-stacks \
                 --query "StackSummaries[*].StackName" \
                 --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
-      - run:
-          name: Remove old stacks and files
-          command: |
-
-            ## You can use any condition like:
-            ## if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
-            ### if [[ "${OldWorkflowID}" =~ "${STACKS[@]}"  ]]
-            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-            then
-              echo "----------cleaning up stacks------------"
-              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
-            else
-                echo ------------ Cannot cleanup stacks --------------
-            fi
+                
+                ## You can use any condition like:
+                ## if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]] 
+                ## if [[ "${OldWorkflowID}" =~ "${STACKS[@]}" ]]
+                if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+                then
+                  echo "----------cleaning up stacks------------"
+                  aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
+                  aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+                  aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+                else
+                    echo ------------ Cannot cleanup stacks --------------
+                fi
              
     
 workflows:
@@ -481,8 +476,10 @@ workflows:
           filters:
             branches:
               only: [dev-branch] 
+      - add-prometheus-node-exporter:
+          requires: [deploy-infrastructure]
       - configure-infrastructure:
-          requires: [deploy-infrastructure] #  [add-prometheus-node-exporter]
+          requires: [add-prometheus-node-exporter] 
       - run-migrations:
           requires: [configure-infrastructure]
       - deploy-frontend:
@@ -492,8 +489,6 @@ workflows:
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
       - cloudfront-update:
-          requires: [smoke-test]
-      - add-prometheus-node-exporter:
           requires: [smoke-test]
       - cleanup:
           requires: [cloudfront-update, add-prometheus-node-exporter]
